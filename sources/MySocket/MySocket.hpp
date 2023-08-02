@@ -1,26 +1,38 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.cpp                                           :+:      :+:    :+:   */
+/*   MySocket.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: sdi-lega <sdi-lega@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/08/01 22:31:13 by sdi-lega          #+#    #+#             */
-/*   Updated: 2023/08/02 08:22:03 by sdi-lega         ###   ########.fr       */
+/*   Created: 2023/08/01 22:29:59 by sdi-lega          #+#    #+#             */
+/*   Updated: 2023/08/01 22:44:49 by sdi-lega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "include.h"
-#include "MySocket.hpp"
+#ifndef MYSOCKET_HPP
+#define MYSOCKET_HPP
 
-int	main(int argc, char const *argv[])
+#include "include.h"
+
+class MySocket
 {
-	if (argc != 2)
-	{
-		std::cerr << "Not enough  arguments." << std::endl;
-		return (1);
-	}
-	MySocket test(9000);
-	(void)argv;
-	return 0;
-}
+public:
+	// Constructors
+	MySocket(int port);
+	MySocket(const MySocket &copy);
+
+	// Destructor
+	~MySocket();
+
+	// Operators
+	MySocket &operator=(const MySocket &assign);
+
+	// Getters / Setters
+	int getFile_des() const;
+
+private:
+	int _file_des;
+};
+
+#endif // MYSOCKET_HPP

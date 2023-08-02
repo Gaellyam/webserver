@@ -5,8 +5,8 @@
 #                                                     +:+ +:+         +:+      #
 #    By: sdi-lega <sdi-lega@student.s19.be>         +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2023/03/26 07:23:39 by sdi-lega          #+#    #+#              #
-#    Updated: 2023/08/01 21:58:45 by sdi-lega         ###   ########.fr        #
+#    Created: 2023/08/01 22:31:04 by sdi-lega          #+#    #+#              #
+#    Updated: 2023/08/02 07:56:06 by sdi-lega         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,19 +14,21 @@ NAME = webserv
 
 SRCSDIR = sources/
  
-CLASSES = Socket
+CLASSES = MySocket
 
-SRCS = ${addsuffix .cpp, ${addprefix ${SRCSDIR}, main ${foreach classe, ${CLASSES}, ${classe}/${classe}}}}
+FILES = main utils
+
+SRCS = ${addsuffix .cpp, ${addprefix ${SRCSDIR}, ${FILES} ${foreach classe, ${CLASSES}, ${classe}/${classe}}}}
 
 OBJSDIR = objects/
 
 SILENT = @
 DEBUG =
-OBJS = ${addsuffix .o, ${addprefix ${OBJSDIR}, main ${foreach classe, ${CLASSES}, ${classe}/${classe}}}}
+OBJS = ${addsuffix .o, ${addprefix ${OBJSDIR}, ${FILES} ${foreach classe, ${CLASSES}, ${classe}/${classe}}}}
 
 CC = c++
 
-FLAGS = -Wall -Wextra -Werror -g -std=c++98 ${addprefix -I${SRCSDIR},${CLASSES}} $(DEBUG)
+FLAGS = -Wall -Wextra -Werror -g -std=c++98 -I${SRCSDIR} ${addprefix -I${SRCSDIR},${CLASSES}} $(DEBUG)
 
 all : ${OBJSDIR} ${NAME}
 		${SILENT}echo All instructions done!

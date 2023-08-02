@@ -1,26 +1,34 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.cpp                                           :+:      :+:    :+:   */
+/*   utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: sdi-lega <sdi-lega@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/08/01 22:31:13 by sdi-lega          #+#    #+#             */
-/*   Updated: 2023/08/02 08:22:03 by sdi-lega         ###   ########.fr       */
+/*   Created: 2023/08/02 07:53:10 by sdi-lega          #+#    #+#             */
+/*   Updated: 2023/08/02 08:21:55 by sdi-lega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "include.h"
-#include "MySocket.hpp"
 
-int	main(int argc, char const *argv[])
+std::string	my_itoa(int number)
 {
-	if (argc != 2)
-	{
-		std::cerr << "Not enough  arguments." << std::endl;
-		return (1);
-	}
-	MySocket test(9000);
-	(void)argv;
-	return 0;
+	char	num[12];
+
+	std::memset(num, 0, 12);
+	sprintf(num, "%d", number);
+	return (std::string(num));
+}
+
+void	exit_error(std::string message)
+{
+	std::cerr << message << std::endl;
+	exit(EXIT_FAILURE);
+}
+
+void	debug_message(std::string message)
+{
+	if (DEBUG == 1)
+		std::cout << message << std::endl;
 }
