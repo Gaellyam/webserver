@@ -31,8 +31,11 @@ public:
 	// Getters / Setters
 	int getFile_des() const;
 
+	int accept_connection(void);
 private:
-	int _file_des;
+	struct sockaddr_in	_server_address;
+	int					_file_des;
+	int					_port;
 };
 
 #endif // MYSOCKET_HPP

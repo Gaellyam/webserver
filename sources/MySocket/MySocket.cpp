@@ -11,24 +11,27 @@
 /* ************************************************************************** */
 
 #include "MySocket.hpp"
+
 // Constructors
-MySocket::MySocket(int port)
+MySocket::MySocket(int port): _file_des(-1), _port(port) 
 {
 	int					domain, service, protocol;
-	struct sockaddr_in	server_address;
 
-	debug_message("Creating socket with port: " + my_itoa(port));
+	debug_message("Creating socket with port: " + my_itoa(_port));
 	domain = AF_INET;
 	service = SOCK_STREAM;
 	protocol = 0;
-	_file_des = socket(domain, service, protocol);
+	_file_des = socket(domain, service, protocol); 											// creation du file descriptor pour le socket
 	if (_file_des == -1)
 		exit_error("Error creating a socket.");
-	server_address.sin_family = domain;
-	server_address.sin_addr.s_addr = INADDR_ANY;
-	server_address.sin_port = htons(port);
-	if (bind(_file_des, (struct sockaddr *)&server_address, sizeof(server_address)) == -1)
+	_server_address.sin_family = domain;
+	_server_address.sin_addr.s_addr = INADDR_ANY;
+	_server_address.sin_port = htons(_port);													// server_adress stocke l'adresse et le port pour l'assigner au socket
+	if (bind(_file_des, (struct sockaddr *)&_server_address, sizeof(_server_address)) == -1)
 		exit_error("Error assigning a name to the socket (bind)");
+	if (listen(_file_des, 10) == -1)
+		exit_error("Error listening to the socket");
+	
 }
 
 MySocket::MySocket(const MySocket &copy)
@@ -54,4 +57,15 @@ MySocket	&MySocket::operator=(const MySocket &assign)
 int	MySocket::getFile_des() const
 {
 	return _file_des;
+}
+
+int MySocket::accept_connection(void)
+{
+	int	new_socket;
+	int address_length;
+	address_length = sizeof(_server_address);
+	new_socket = accept(_file_des, (struct sockaddr *)&_server_address, (socklen_t *)&address_length);
+	if (new_socket == -1)
+		exit_error("Error accepting connection");
+	return (new_socket);
 }
