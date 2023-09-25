@@ -6,7 +6,7 @@
 /*   By: sdi-lega <sdi-lega@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/01 22:30:41 by sdi-lega          #+#    #+#             */
-/*   Updated: 2023/08/02 08:21:40 by sdi-lega         ###   ########.fr       */
+/*   Updated: 2023/09/25 11:33:18 by sdi-lega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,8 @@
 #include <cstdlib>		//
 #include <unistd.h>		// sockets
 #include <cstring>		// sockets
+#include <fstream>		// files handling
+#include <sstream>		// string handling
 
 void		exit_error(std::string message);
 void		debug_message(std::string message);
