@@ -29,8 +29,6 @@ MySocket::MySocket(int port): _file_des(-1), _port(port)
 	_server_address.sin_port = htons(_port);													// server_adress stocke l'adresse et le port pour l'assigner au socket
 	if (bind(_file_des, (struct sockaddr *)&_server_address, sizeof(_server_address)) == -1)
 		exit_error("Error assigning a name to the socket (bind)");
-	if (listen(_file_des, 10) == -1)
-		exit_error("Error listening to the socket");
 	
 }
 
@@ -65,10 +63,14 @@ int MySocket::accept_connection(void)
 	int	new_socket;
 	int address_length;
 	address_length = sizeof(_server_address);
-	std::cout << "test1" << std::endl;
 	new_socket = accept(_file_des, (struct sockaddr *)&_server_address, (socklen_t *)&address_length);
 	if (new_socket == -1)
 		exit_error("Error accepting connection");
-	std::cout << "test2" << std::endl;
 	return (new_socket);
+}
+
+void MySocket::set_listen()
+{
+	if (listen(_file_des, 10) == -1)
+		exit_error("Error listening to the socket");
 }

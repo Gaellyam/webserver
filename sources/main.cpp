@@ -6,7 +6,7 @@
 /*   By: sdi-lega <sdi-lega@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/01 22:31:13 by sdi-lega          #+#    #+#             */
-/*   Updated: 2023/09/26 00:49:28 by sdi-lega         ###   ########.fr       */
+/*   Updated: 2023/09/26 01:20:02 by sdi-lega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,20 +48,20 @@ int	main(int argc, char const *argv[])
 			{
 				if (fds[i].revents == POLLIN)
 				{
-					std::cout << "Event: "<< i << "not pollin: " << fds[i].revents<<std::endl;
 					std::cout << "index: " << i << std::endl;
 					fd = arr[i].accept_connection();
 					valread = read(fd, buffer, 30000);
-					printf("%s\n", buffer);
+					std::cout << buffer << std::endl;
 					write(fd , whole.c_str(), strlen(whole.c_str()));
-					printf("------------------Hello message sent-------------------\n");
+					std::cout << "------------------Hello message sent-------------------\n" << std::endl;
 					buff_stream.str("");
 					close(fd);
 					fds[i].revents = 0;
 				}
-				else
+				else if (fds[i].revents == POLLHUP)
 				{
-					std::cout << "Event: "<< i << "not pollin: " << fds[i].revents<<std::endl;
+					arr[i].set_listen();
+					fds[i].revents = 0;
 				}
 			}
 		}

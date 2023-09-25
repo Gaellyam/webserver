@@ -32,6 +32,7 @@ public:
 	int getFile_des() const;
 
 	int accept_connection(void);
+	void set_listen(void);
 private:
 	struct sockaddr_in	_server_address;
 	int					_file_des;
