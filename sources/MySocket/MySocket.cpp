@@ -42,6 +42,7 @@ MySocket::MySocket(const MySocket &copy)
 // Destructor
 MySocket::~MySocket()
 {
+	close(_file_des);
 	debug_message("Destructor of socket called");
 	close(_file_des);
 }
@@ -64,8 +65,10 @@ int MySocket::accept_connection(void)
 	int	new_socket;
 	int address_length;
 	address_length = sizeof(_server_address);
+	std::cout << "test1" << std::endl;
 	new_socket = accept(_file_des, (struct sockaddr *)&_server_address, (socklen_t *)&address_length);
 	if (new_socket == -1)
 		exit_error("Error accepting connection");
+	std::cout << "test2" << std::endl;
 	return (new_socket);
 }
