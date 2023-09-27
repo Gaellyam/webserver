@@ -6,7 +6,7 @@
 /*   By: sdi-lega <sdi-lega@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/01 22:31:13 by sdi-lega          #+#    #+#             */
-/*   Updated: 2023/09/27 13:57:23 by sdi-lega         ###   ########.fr       */
+/*   Updated: 2023/09/27 22:40:36 by sdi-lega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ void	receive_message(int file_des)
 	char				buffer[10];
 	std::stringstream	buff;
 
-	bytes_read = read(file_des, buffer, 10);
+	bytes_read = recv(file_des, buffer, 10, 0);
 	buff.write(buffer, bytes_read);
 	fcntl(file_des, F_SETFL, O_NONBLOCK);
 	while (bytes_read == 10)
@@ -61,7 +61,12 @@ std::string handle_file(std::string path)
 	return (response);
 }
 
-
+std::vector<MySocket> &create_socket_array(std::vector<MySocket> &array)
+{
+	array.push_back(MySocket(9001));
+	array.push_back(MySocket(9002));
+	return (array);
+}
 
 int	main(int argc, char const *argv[])
 {
@@ -76,10 +81,7 @@ int	main(int argc, char const *argv[])
 		std::cerr << "Using default path" << std::endl;
 		// return (1);
 	}
-	MySocket test1 = MySocket(9003);
-	MySocket test2 = MySocket(9002);
-	socket_array.push_back(test1);
-	socket_array.push_back(test2);
+	create_socket_array(socket_array);
 	fill_fd_array(file_des_array, socket_array);
 	std::string message_content = handle_file("www/small.html");
 	while (1)
@@ -94,7 +96,7 @@ int	main(int argc, char const *argv[])
 				{
 					client_fd = socket_array[i].accept_connection();
 					receive_message(client_fd);
-					send_message(client_fd, header, message_content);
+					// send_message(client_fd, header, message_content);
 					std::cout << "------------------Hello message sent-------------------\n" << std::endl;
 					close(client_fd);
 					file_des_array[i].revents = 0;
