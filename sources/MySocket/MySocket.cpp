@@ -28,21 +28,22 @@ MySocket::MySocket(int port): _file_des(-1), _port(port)
 	_server_address.sin_addr.s_addr = INADDR_ANY;
 	_server_address.sin_port = htons(_port);													// server_adress stocke l'adresse et le port pour l'assigner au socket
 	if (bind(_file_des, (struct sockaddr *)&_server_address, sizeof(_server_address)) == -1)
+	{
+		std::cout << "test1" <<std::endl;
+		perror("test");
 		exit_error("Error assigning a name to the socket (bind)");
-	
+	}
 }
 
-MySocket::MySocket(const MySocket &copy)
+MySocket::MySocket(const MySocket &copy): _file_des(copy._file_des), _port(copy._port), _server_address(copy._server_address)
 {
-	_file_des = copy.getFile_des();
+	
 }
 
 // Destructor
 MySocket::~MySocket()
 {
-	close(_file_des);
 	debug_message("Destructor of socket called");
-	close(_file_des);
 }
 
 // Operators

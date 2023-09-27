@@ -6,62 +6,103 @@
 /*   By: sdi-lega <sdi-lega@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/01 22:31:13 by sdi-lega          #+#    #+#             */
-/*   Updated: 2023/09/26 01:20:02 by sdi-lega         ###   ########.fr       */
+/*   Updated: 2023/09/27 13:57:23 by sdi-lega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "MySocket.hpp"
 #include "include.h"
+#include <fcntl.h>
+
+void	send_message(int file_des, std::string header, std::string content)
+{
+	write(file_des, header.c_str(), strlen(header.c_str()));
+	write(file_des, content.c_str(), content.size());
+}
+
+void	receive_message(int file_des)
+{
+	int					bytes_read;
+	char				buffer[10];
+	std::stringstream	buff;
+
+	bytes_read = read(file_des, buffer, 10);
+	buff.write(buffer, bytes_read);
+	fcntl(file_des, F_SETFL, O_NONBLOCK);
+	while (bytes_read == 10)
+	{
+		bytes_read = recv(file_des, buffer, 10, 0);
+		buff.write(buffer, bytes_read);
+	}
+	std::cout << buff.str() << std::endl;
+}
+
+void fill_fd_array(struct pollfd *file_des_array, std::vector<MySocket> const &socket_array)
+{
+	size_t	size = socket_array.size();
+	memset(file_des_array, 0, size);
+	for (size_t i = 0; i < size; i++)
+	{
+		file_des_array[i].fd = socket_array[i].getFile_des();
+		file_des_array[i].events = POLLIN;
+	}
+	
+}
+
+std::string handle_file(std::string path)
+{
+	std::ifstream		file(path.c_str(), std::ios_base::binary);
+	std::stringstream	buff_stream;
+
+	buff_stream << file.rdbuf();
+	std::string response;
+	response = buff_stream.str();
+	file.close();
+	return (response);
+}
+
+
 
 int	main(int argc, char const *argv[])
 {
-	struct pollfd	fds[5];
-	int				fd;
-	int				valread;
-	// char			buffer[30000];
-
-	// char	buffer[30000];
+	unsigned int				socket_number = 2;
+	std::vector<MySocket>		socket_array;
+	struct pollfd				file_des_array[socket_number];
+	int							client_fd;
 	(void)argv;
+
 	if (argc != 2)
 	{
 		std::cerr << "Using default path" << std::endl;
 		// return (1);
 	}
-	MySocket arr[2] = {9002, 9001};
-	memset(fds, 0, sizeof(fds));
-	fds[0].fd = arr[0].getFile_des();
-	fds[0].events = POLLIN;
-	fds[1].fd = arr[1].getFile_des();
-	fds[1].events = POLLIN;
-	std::stringstream buff_stream;
+	MySocket test1 = MySocket(9003);
+	MySocket test2 = MySocket(9002);
+	socket_array.push_back(test1);
+	socket_array.push_back(test2);
+	fill_fd_array(file_des_array, socket_array);
+	std::string message_content = handle_file("www/small.html");
 	while (1)
 	{
-		std::string header = "HTTP/1.1 200 OK\nContent-Type: text/html; charset=UTF-8\n\n";
-		std::string whole = header + "test";
+		std::string header = "HTTP/1.1 200 OK\nContent-Type: text/html\n\n";
 		printf("\n+++++++ Waiting for new connection ++++++++\n\n");
-		char buffer[30000] = {0};
-		std::cout << "Before poll:\nevent 1: " << fds[0].revents << "\nevent 2: " << fds[1].revents << std::endl;
-		if (poll(fds, 2, -1) > 0)
+		if (poll(file_des_array, socket_number, -1) > 0)
 		{
-			std::cout << "After poll:\nevent 1: " << fds[0].revents << "\nevent 2: " << fds[1].revents << std::endl;
-			for (size_t i = 0; i < 2; i++)
+			for (size_t i = 0; i < socket_number; i++)
 			{
-				if (fds[i].revents == POLLIN)
+				if (file_des_array[i].revents == POLLIN)
 				{
-					std::cout << "index: " << i << std::endl;
-					fd = arr[i].accept_connection();
-					valread = read(fd, buffer, 30000);
-					std::cout << buffer << std::endl;
-					write(fd , whole.c_str(), strlen(whole.c_str()));
+					client_fd = socket_array[i].accept_connection();
+					receive_message(client_fd);
+					send_message(client_fd, header, message_content);
 					std::cout << "------------------Hello message sent-------------------\n" << std::endl;
-					buff_stream.str("");
-					close(fd);
-					fds[i].revents = 0;
+					close(client_fd);
+					file_des_array[i].revents = 0;
 				}
-				else if (fds[i].revents == POLLHUP)
+				else if (file_des_array[i].revents == POLLHUP)
 				{
-					arr[i].set_listen();
-					fds[i].revents = 0;
+					socket_array[i].set_listen();
+					file_des_array[i].revents = 0;
 				}
 			}
 		}
@@ -69,7 +110,6 @@ int	main(int argc, char const *argv[])
 		{
 			std::cerr << "error with poll." << std::endl;
 		}
-		// ouvrir localhost:9000 sur son navigateur crée une connection
 	}
 	return (0);
 }
