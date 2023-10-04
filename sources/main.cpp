@@ -6,7 +6,7 @@
 /*   By: sdi-lega <sdi-lega@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/01 22:31:13 by sdi-lega          #+#    #+#             */
-/*   Updated: 2023/09/27 22:40:36 by sdi-lega         ###   ########.fr       */
+/*   Updated: 2023/10/04 12:17:09 by sdi-lega         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,13 +14,32 @@
 #include "include.h"
 #include <fcntl.h>
 
-void	send_message(int file_des, std::string header, std::string content)
+std::string handle_file(std::string path)
 {
-	write(file_des, header.c_str(), strlen(header.c_str()));
-	write(file_des, content.c_str(), content.size());
+	std::ifstream		file(path.c_str(), std::ios_base::binary);
+	std::stringstream	buff_stream;
+
+	buff_stream << file.rdbuf();
+	std::string response;
+	response = buff_stream.str();
+	file.close();
+	return (response);
 }
 
-void	receive_message(int file_des)
+void	send_message(int file_des, std::string header, std::vector <std::string> vector)
+{
+	std::string	path;
+
+	if (vector[1] == "/")
+		path = vector[1] = "/index.htm";
+	path = "www" + vector[1];
+	std::cout << "Path_sent: " << path << std::endl;
+	std::string message_content = handle_file(path);
+	write(file_des, header.c_str(), strlen(header.c_str()));
+	write(file_des, message_content.c_str(), message_content.size());
+}
+
+std::string	receive_message(int file_des)
 {
 	int					bytes_read;
 	char				buffer[10];
@@ -34,7 +53,7 @@ void	receive_message(int file_des)
 		bytes_read = recv(file_des, buffer, 10, 0);
 		buff.write(buffer, bytes_read);
 	}
-	std::cout << buff.str() << std::endl;
+	return (buff.str());
 }
 
 void fill_fd_array(struct pollfd *file_des_array, std::vector<MySocket> const &socket_array)
@@ -49,17 +68,6 @@ void fill_fd_array(struct pollfd *file_des_array, std::vector<MySocket> const &s
 	
 }
 
-std::string handle_file(std::string path)
-{
-	std::ifstream		file(path.c_str(), std::ios_base::binary);
-	std::stringstream	buff_stream;
-
-	buff_stream << file.rdbuf();
-	std::string response;
-	response = buff_stream.str();
-	file.close();
-	return (response);
-}
 
 std::vector<MySocket> &create_socket_array(std::vector<MySocket> &array)
 {
@@ -68,12 +76,31 @@ std::vector<MySocket> &create_socket_array(std::vector<MySocket> &array)
 	return (array);
 }
 
+std::vector<std::string>	parse_message(std::string message)
+{
+	std::stringstream			stream(message);
+	std::vector <std::string>	vector(2);
+	std::string					method;
+	std::string					path;
+	
+	// std::cout << "stream: [\n" << stream.str() << "\n]" << std::endl;
+	stream >> method >> path;
+	vector[0] = method;
+	vector[1] = path;
+	std::cout << "Method: [ " << method << " ]\n";
+	std::cout << "Path: [ " << path << " ]\n";
+	std::cout.flush();
+	return (vector);
+}
+
 int	main(int argc, char const *argv[])
 {
 	unsigned int				socket_number = 2;
 	std::vector<MySocket>		socket_array;
 	struct pollfd				file_des_array[socket_number];
 	int							client_fd;
+	std::string	message;
+	std::vector<std::string> vector;
 	(void)argv;
 
 	if (argc != 2)
@@ -83,10 +110,9 @@ int	main(int argc, char const *argv[])
 	}
 	create_socket_array(socket_array);
 	fill_fd_array(file_des_array, socket_array);
-	std::string message_content = handle_file("www/small.html");
 	while (1)
 	{
-		std::string header = "HTTP/1.1 200 OK\nContent-Type: text/html\n\n";
+		std::string header = "HTTP/1.1 200 OK\n\n";
 		printf("\n+++++++ Waiting for new connection ++++++++\n\n");
 		if (poll(file_des_array, socket_number, -1) > 0)
 		{
@@ -95,9 +121,10 @@ int	main(int argc, char const *argv[])
 				if (file_des_array[i].revents == POLLIN)
 				{
 					client_fd = socket_array[i].accept_connection();
-					receive_message(client_fd);
-					// send_message(client_fd, header, message_content);
-					std::cout << "------------------Hello message sent-------------------\n" << std::endl;
+					message = receive_message(client_fd);
+					vector = parse_message(message);
+					send_message(client_fd, header, vector);
+					// std::cout << "------------------Hello message sent-------------------\n" << std::endl;
 					close(client_fd);
 					file_des_array[i].revents = 0;
 				}
